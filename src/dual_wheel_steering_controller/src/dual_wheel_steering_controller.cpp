@@ -79,8 +79,7 @@ namespace dual_wheel_steering_controller
           enable_twist_cmd_(false),
           debug_period_time_(1.0),
           last_front_steer_pos_cmd_(0.0),
-          last_rear_steer_pos_cmd_(0.0),
-          controller_version_(1)
+          last_rear_steer_pos_cmd_(0.0)
         //   steer_delay_factor_coefficient_(5.0)
     {
     }
@@ -96,14 +95,6 @@ namespace dual_wheel_steering_controller
         const std::string complete_ns = controller_nh.getNamespace();
         std::size_t id = complete_ns.find_last_of("/");
         name_ = complete_ns.substr(id + 1);
-
-        controller_nh.param("controller_version", controller_version_, controller_version_);
-        if (controller_version_ == 1)
-            LOG(INFO) << "controller_version : Robotnik Automation version";
-        else if (controller_version_ == 2)
-            LOG(INFO) << "controller_version : CMU version";
-        else
-            LOG(ERROR) << "controller_version : NO controller version";
 
         /* Get joint names from the parameter server */
         std::string front_wheel_name = "front_wheel_joint";
@@ -333,60 +324,35 @@ namespace dual_wheel_steering_controller
         double rear_wheel_vel = 0.0;     // unit: m/s
         double rear_wheel_ang_vel = 0.0; // unit: rad/s
 
-        if (controller_version_ == 1)
-        {
-            front_wheel_vel = std::sqrt(v1x * v1x + v1y * v1y);
-            rear_wheel_vel = std::sqrt(v2x * v2x + v2y * v2y);
-            front_steer_pos_cmd = std::atan2(v1y, v1x);
-            rear_steer_pos_cmd = std::atan2(v2y, v2x);
-            if (front_steer_pos_cmd > M_PI / 2 + 0.5 /*30 degree*/)
-            {
-                front_steer_pos_cmd -= M_PI;
-                front_wheel_vel *= -1;
-            }
-            else if (front_steer_pos_cmd < -M_PI / 2 - 0.5 /*30 degree*/)
-            {
-                front_steer_pos_cmd += M_PI;
-                front_wheel_vel *= -1;
-            }
+        front_wheel_vel = std::sqrt(v1x * v1x + v1y * v1y);
+        rear_wheel_vel = std::sqrt(v2x * v2x + v2y * v2y);
+        front_steer_pos_cmd = std::atan2(v1y, v1x);
+        rear_steer_pos_cmd = std::atan2(v2y, v2x);
 
-            if (rear_steer_pos_cmd > M_PI / 2 + 0.5 /*30 degree*/)
-            {
-                rear_steer_pos_cmd -= M_PI;
-                rear_wheel_vel *= -1;
-            }
-            else if (rear_steer_pos_cmd < -M_PI / 2 - 0.5 /*30 degree*/)
-            {
-                rear_steer_pos_cmd += M_PI;
-                rear_wheel_vel *= -1;
-            }
-            front_wheel_ang_vel = front_wheel_vel / wr_; // omega = linear_vel / radius
-            rear_wheel_ang_vel = rear_wheel_vel / wr_;   // omega = linear_vel / radius
-        }
-        else if (controller_version_ == 2)
+        if (front_steer_pos_cmd > M_PI / 2 + 0.5 /*30 degree*/)
         {
-            if (fabs(cur_cmd_twist.ang) < 1e-6 && fabs(cur_cmd_twist.lin_x) < 1e-6 && fabs(cur_cmd_twist.lin_y) < 1e-6)
-            {
-                front_steer_pos_cmd = 0.0;
-                rear_steer_pos_cmd = 0.0;
-            }
-            else
-            {
-                front_steer_pos_cmd = atan(v1y / v1x);
-                rear_steer_pos_cmd = atan(v2y / v2x);
-            }
-            front_wheel_vel = v1x * cos(front_steer_pos_cmd) + v1y * sin(front_steer_pos_cmd);
-            front_wheel_ang_vel = front_wheel_vel / wr_; // omega = linear_vel / radius
+            front_steer_pos_cmd -= M_PI;
+            front_wheel_vel *= -1;
+        }
+        else if (front_steer_pos_cmd < -M_PI / 2 - 0.5 /*30 degree*/)
+        {
+            front_steer_pos_cmd += M_PI;
+            front_wheel_vel *= -1;
+        }
 
-            rear_wheel_vel = v2x * cos(rear_steer_pos_cmd) + v2y * sin(rear_steer_pos_cmd);
-            rear_wheel_ang_vel = rear_wheel_vel / wr_; // omega = linear_vel / radius
-        }
-        else
+        if (rear_steer_pos_cmd > M_PI / 2 + 0.5 /*30 degree*/)
         {
-            LOG(ERROR) << "controller_versionn = "
-                       << "NO controller setup !!!! " << std::endl;
-            return;
+            rear_steer_pos_cmd -= M_PI;
+            rear_wheel_vel *= -1;
         }
+        else if (rear_steer_pos_cmd < -M_PI / 2 - 0.5 /*30 degree*/)
+        {
+            rear_steer_pos_cmd += M_PI;
+            rear_wheel_vel *= -1;
+        }
+        front_wheel_ang_vel = front_wheel_vel / wr_; // omega = linear_vel / radius
+        rear_wheel_ang_vel = rear_wheel_vel / wr_;   // omega = linear_vel / radius
+        
 
         VLOG(9) << " Front Steer : "
                 << std::fixed << std::setprecision(2) << front_steer_pos_cmd / M_PI * 180.0f << " degree , "

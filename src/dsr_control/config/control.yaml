@@ -5,8 +5,6 @@ dual_wheel_steering_joint_publisher:
 dual_wheel_steering_controller:
   type: "dual_wheel_steering_controller/DualWheelSteeringController"
   
-  controller_version: 1  # 1: Robotnik Automation version  2: CMU version
-
   debug_period_time: 0.4
 
   front_wheel_joint: front_wheel_joint

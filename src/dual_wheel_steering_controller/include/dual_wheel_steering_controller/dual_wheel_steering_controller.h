@@ -109,8 +109,6 @@ namespace dual_wheel_steering_controller
         /// 上一個時刻 後輪的轉向控制令 unit rad 初始值為 0
         double last_rear_steer_pos_cmd_;
 
-        int controller_version_;
-
         // last cmds
         double last1_vx_cmd_;
         double last0_vx_cmd_;
