@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.0"/>
+  <arg name="yaw" default="0.0"/>  
+  <arg name="robot_namespace" default="/"/>
+
+  <include file="$(find dsr_description)/launch/description.launch">
+  </include>
+
+  <!-- Spawn robot in gazebo -->
+  <node name="spawn_dsr_model" pkg="gazebo_ros" type="spawn_model" args="
+              -x $(arg x)
+              -y $(arg y)
+              -z $(arg z)
+              -Y $(arg yaw)
+              -urdf
+              -param robot_description
+              -model $(arg robot_namespace)" />
+
+</launch>

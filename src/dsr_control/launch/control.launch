@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Load controller configuration -->
+  <rosparam command="load" file="$(find dsr_control)/config/control.yaml" />
+
+  <!-- Spawn controllers -->
+  <node name="base_controller_spawner" 
+        pkg="controller_manager" 
+        type="spawner" 
+        output="screen" 
+        args="dual_wheel_steering_joint_publisher dual_wheel_steering_controller">
+  </node>
+
+</launch>

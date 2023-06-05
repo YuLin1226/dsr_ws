@@ -1,0 +1,105 @@
+dual_wheel_steering_joint_publisher:
+  type: "joint_state_controller/JointStateController"
+  publish_rate: 50
+
+dual_wheel_steering_controller:
+  type: "dual_wheel_steering_controller/DualWheelSteeringController"
+  
+  controller_version: 1  # 1: Robotnik Automation version  2: CMU version
+
+  debug_period_time: 0.4
+
+  front_wheel_joint: front_wheel_joint
+  rear_wheel_joint: back_wheel_joint
+  front_steer_joint: front_steer_joint
+  rear_steer_joint: back_steer_joint
+
+  # wheel_base      : 0.958
+  # wheel_radius    : 0.10975
+  odom_h_variable: 1.04384134
+
+  publish_rate: 50.0 # default: 50
+  pose_covariance_diagonal:
+    [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
+  twist_covariance_diagonal:
+    [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
+  cmd_vel_timeout: 0.25
+  velocity_rolling_window_size: 10
+
+  base_frame_id: base_footprint #default: base_link
+  open_loop: false
+
+  # Odometry fused with IMU is published by robot_localization, so
+  # no need to publish a TF based on encoders alone.
+  enable_odom_tf: false
+
+  # Wheel base and radius width multipliers
+  wheel_base_multiplier: 1.0   # default: 1.0
+  wheel_radius_multiplier: 1.0 # default: 1.0
+
+  # Coefficient used in steer_delay_factor.
+  # The larger, the longer for steer delay.
+  # Default: 5.0
+  steer_delay_factor_coefficient : 5.0
+
+  # Velocity and acceleration limits
+  # Whenever a min_* is unspecified, default to -max_*
+  linear:
+    x:
+      has_velocity_limits: true
+      max_velocity: 1.0 # m/s
+      #   min_velocity           : -0.5 # m/s
+      has_acceleration_limits: true
+      max_acceleration: 0.5 # m/s^2
+    #   min_acceleration         : -0.4 # m/s^2
+    #   has_jerk_limits        : true
+    #   max_jerk               : 5.0  # m/s^3
+
+  angular:
+    z:
+      has_velocity_limits: true
+      max_velocity: 1.0 # rad/s
+      has_acceleration_limits: true
+      max_acceleration: 1.0 # rad/s^2
+    #   has_jerk_limits        : true
+    #   max_jerk               : 2.5  # rad/s^3
+    #   min_jerk               : 2.5  # rad/s^3
+
+# ********************************** Reference formula **********************************
+# 
+#                         sqrt(Vx,max^2 + (Vy,max + wheel_base * Wmax / 2)^2)
+# (1) max_velocity = -------------------------------------------------------------
+#                                          wheel_radius_ 
+#
+# (2) max_acceleration: Think "dt" first, and then design the value.
+#
+# Example: If you want Vx(0.3) , Vy(0.1) , W(0.3) , dt(0.5)
+#          => max_velocity(3.0)
+#          => max_acceleration(6.0)
+# ********************************** Reference formula **********************************
+
+  front_wheel:
+      has_velocity_limits    : true
+      max_velocity           : 3.0  # rad/s
+      min_velocity           : -3.0 # rad/s
+
+      has_acceleration_limits: true
+      max_acceleration       : 6.0  # rad/s^2
+      min_acceleration       : -6.0 # rad/s^2
+
+      has_jerk_limits        : false
+      max_jerk               : 5.0  # rad/s^3
+      min_jerk               : -5.0 # rad/s^3
+
+  rear_wheel:
+      has_velocity_limits    : true
+      max_velocity           : 3.0  # rad/s
+      min_velocity           : -3.0 # rad/s
+
+      has_acceleration_limits: true
+      max_acceleration       : 6.0  # rad/s^2
+      min_acceleration       : -6.0 # rad/s^2
+
+      has_jerk_limits        : false
+      max_jerk               : 5.0  # rad/s^3
+      min_jerk               : -5.0 # rad/s^3

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<robot name="lidar"  xmlns:xacro="http://ros.org/wiki/xacro">
+  
+
+    <!-- LIDAR SENSOR -->
+    <xacro:macro name="lidar" params ="suffix x y z yaw"> 
+        <link name="laser_${suffix}"/>
+
+        <joint name="joint_laser_${suffix}" type="fixed">
+            <axis xyz="0 1 0" />
+            <origin xyz="${x} ${y} ${z}" rpy="0 0 ${yaw}"/>
+            <parent link="base_link"/>
+            <child link="laser_${suffix}"/>
+        </joint>
+
+
+
+        <gazebo reference="laser_${suffix}">
+            <sensor type="ray" name="${suffix}_sick_sensor">
+                <pose>0 0 0 0 0 0</pose>
+                <visualize>false</visualize>
+                <update_rate>30</update_rate>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>720</samples>
+                            <resolution>1</resolution>
+                            <min_angle>-1.570796</min_angle>
+                            <max_angle>1.570796</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>0.10</min>
+                        <max>30.0</max>
+                        <resolution>0.01</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                </ray>
+
+                <plugin name="gazebo_ros_${suffix}_sick_controller" filename="libgazebo_ros_laser.so">
+                    <robotNamespace>/</robotNamespace>
+                    <topicName>${suffix}/scan</topicName>
+                    <frameName>laser_${suffix}</frameName>
+                </plugin>
+            </sensor>
+        </gazebo>
+
+    </xacro:macro>
+    
+    <xacro:lidar suffix="front" x="0.772" y="0" z="0.14" yaw="0"/>
+    <xacro:lidar suffix="rear" x="-0.772" y="0" z="0.14" yaw="3.1416"/>
+
+</robot>

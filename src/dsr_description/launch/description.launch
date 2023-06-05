@@ -1,0 +1,14 @@
+<launch>    
+
+    <!-- argument -->
+    <arg name="robot_name" default="DSR"/>
+    <arg name="model" default="DSR_robot"/>
+
+    <!-- load robot description as parameter -->
+    <param name="robot_description" 
+           command="$(find xacro)/xacro --inorder $(find dsr_description)/urdf/$(arg model).urdf.xacro robotName:=$(arg robot_name)"/>
+    
+    <!-- state publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+</launch>

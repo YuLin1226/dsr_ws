@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<robot name="$(arg robotName)"  xmlns:xacro="http://ros.org/wiki/xacro">
+    <!-- ros_control plugin -->
+    <gazebo>
+        <plugin name="ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>$(arg robotName)</robotNamespace>
+            <controlPeriod>0.001</controlPeriod>
+            <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+        </plugin>
+    </gazebo>
+
+    <xacro:macro name="gazebo_links_setting"> 
+        
+        <gazebo reference="base_footprint">
+            <material>Gazebo/Green</material>
+        </gazebo>
+
+        <gazebo reference="base_link">
+            <material>Gazebo/Red</material>
+        </gazebo>
+
+        <gazebo reference="front_wheel_link">
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="back_wheel_link">
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="right_wheel_link">
+            <mu1 value="2.0"/> 
+            <mu2 value="1.0"/> 
+            <fdir1 value="0 0 0"/>
+            <kp value="1000000000.0"/>
+            <kd value="1.0"/>        
+            <material>Gazebo/Grey</material>
+        </gazebo>
+
+        <gazebo reference="left_wheel_link">
+            <mu1 value="2.0"/> 
+            <mu2 value="1.0"/> 
+            <kp value="1000000000.0"/>
+            <kd value="1.0"/>        
+            <fdir1 value="0 0 0"/>
+            <material>Gazebo/Grey</material>
+        </gazebo>
+
+
+    </xacro:macro>
+
+    <xacro:gazebo_links_setting/>
+
+</robot>

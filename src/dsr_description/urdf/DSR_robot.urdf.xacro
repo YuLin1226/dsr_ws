@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot name="$(arg robotName)"  xmlns:xacro="http://ros.org/wiki/xacro">
+  
+
+    <!-- Import robot body model  -->
+    <xacro:include filename="$(find dsr_description)/urdf/DSR_body.urdf.xacro" />
+
+    <!-- Import IMU model  -->
+    <xacro:include filename="$(find dsr_description)/urdf/sensor/imu.urdf.xacro" />
+
+    <!-- Import Lidar model  -->
+    <xacro:include filename="$(find dsr_description)/urdf/sensor/lidar.urdf.xacro" />
+
+
+</robot>
