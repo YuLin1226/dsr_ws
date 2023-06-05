@@ -15,7 +15,7 @@
 
 
     <!-- 運動學車體關鍵參數 -->
-    <xacro:property name="wheel_offset_x" value="1.02" />
+    <xacro:property name="wheel_offset_x" value="0.5" />
     <xacro:property name="wheel_offset_y" value="0.0" />
     <xacro:property name="motor_wheel_offset_z" value="0.125" />
 
