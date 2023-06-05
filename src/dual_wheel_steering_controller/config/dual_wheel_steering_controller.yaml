@@ -1,0 +1,89 @@
+# nameSpace: 
+    dual_wheel_steering_controller: 
+        type: "dual_wheel_steering_controller/DualWheelSteeringController"
+
+        front_wheel     : ['joint_front_wheel']
+        rear_wheel      : ['joint_back_wheel']
+        front_steering  : ['joint_front_motor_wheel']
+        rear_steering   : ['joint_back_motor_wheel']
+        
+        pose_covariance_diagonal : [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
+        twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
+        
+        wheel_base      : 0.3
+        wheel_radius    : 0.3
+
+        publish_rate                    : 50.0              
+        velocity_rolling_window_size    : 10
+        cmd_vel_timeout                 : 0.25
+
+        base_frame_id   : base_footprint
+        
+        open_loop       : false
+        enable_odom_tf  : true
+
+        steer_delay_factor_coefficient : 5.0
+
+        linear:
+            x:
+                has_velocity_limits    : true
+                max_velocity           : 1.0  # m/s
+                min_velocity           : -0.5 # m/s
+
+                has_acceleration_limits: true
+                max_acceleration       : 0.8  # m/s^2
+                min_acceleration       : -0.4 # m/s^2
+
+                has_jerk_limits        : true
+                max_jerk               : 5.0  # m/s^3
+                # min_jerk               : 5.0  # m/s^3
+        angular:
+            z:
+                has_velocity_limits    : true
+                max_velocity           : 1.7  # rad/s
+                # min_velocity           : 1.7  # rad/s
+
+                has_acceleration_limits: true
+                max_acceleration       : 1.5  # rad/s^2
+                # min_acceleration       : 1.5  # rad/s^2
+
+                has_jerk_limits        : true
+                max_jerk               : 2.5  # rad/s^3
+                # min_jerk               : 2.5  # rad/s^3
+
+
+# ********************************** Reference formula **********************************
+# 
+#                         sqrt(Vx,max^2 + (Vy,max + wheel_base * Wmax / 2)^2)
+# (1) max_velocity = -------------------------------------------------------------
+#                                          wheel_radius_ 
+#
+# (2) max_acceleration: Think "dt" first, and then design the value.
+#
+# ********************************** Reference formula **********************************
+
+        front_wheel:
+            has_velocity_limits    : true
+            max_velocity           : 1.0  # rad/s
+            min_velocity           : -0.5 # rad/s
+
+            has_acceleration_limits: true
+            max_acceleration       : 0.8  # rad/s^2
+            min_acceleration       : -0.4 # rad/s^2
+
+            has_jerk_limits        : false
+            max_jerk               : 5.0  # rad/s^3
+            min_jerk               : -5.0 # rad/s^3
+
+        rear_wheel:
+            has_velocity_limits    : true
+            max_velocity           : 1.0  # rad/s
+            min_velocity           : -0.5 # rad/s
+
+            has_acceleration_limits: true
+            max_acceleration       : 0.8  # rad/s^2
+            min_acceleration       : -0.4 # rad/s^2
+
+            has_jerk_limits        : false
+            max_jerk               : 5.0  # rad/s^3
+            min_jerk               : -5.0 # rad/s^3

@@ -1,0 +1,8 @@
+#pragma once
+
+#include <string>
+
+namespace dual_wheel_steering_controller
+{
+    const std::string WORK_SPACE_PATH = "@WORK_SPACE_PATH@";
+}

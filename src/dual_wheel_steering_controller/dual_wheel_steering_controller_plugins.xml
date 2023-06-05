@@ -1,0 +1,9 @@
+<library path="lib/libdual_wheel_steering_controller">
+
+  <class name="dual_wheel_steering_controller/DualWheelSteeringController" type="dual_wheel_steering_controller::DualWheelSteeringController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      The DualWheelSteeringController tracks velocity commands. It expects 2 VelocityJointInterface type and 2 PositionJointInterface type of hardware interfaces.
+    </description>
+  </class>
+
+</library>

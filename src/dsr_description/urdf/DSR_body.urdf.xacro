@@ -4,18 +4,37 @@
     <!-- Import all Gazebo-customization elements, including Gazebo colors -->
     <xacro:include filename="$(find dsr_description)/urdf/DSR.gazebo" />
 
-    <!-- Xacro Properties -->
+    <xacro:property name="back_wheel_length" value="0.07" />
+    <xacro:property name="front_wheel_length" value="0.07" />
+
+    <xacro:property name="left_wheel_radius" value="0.06" />
+    <xacro:property name="left_wheel_length" value="0.03" />
+
+    <xacro:property name="right_wheel_radius" value="0.06" />
+    <xacro:property name="right_wheel_length" value="0.03" />
+
+
+    <!-- 運動學車體關鍵參數 -->
+    <xacro:property name="wheel_offset_x" value="1.02" />
+    <xacro:property name="wheel_offset_y" value="0.0" />
+    <xacro:property name="motor_wheel_offset_z" value="0.125" />
+
+    <!-- 運動學輪子關鍵參數 -->
+    <xacro:property name="back_wheel_radius" value="0.125" />
+    <xacro:property name="front_wheel_radius" value="0.125" />
+
+
+    <xacro:property name="M_PI" value="3.14159"/>
     <xacro:property name="PI" value="3.1415926535897931"/>
-    <xacro:property name="wheel_offset_x" value="0.479" />
-    <xacro:property name="wheel_offset_y" value="0.0" /> 
-    <xacro:property name="wheel_offset_z" value="0.110" /> 
+
+    <xacro:property name="wheel_offset_z" value="0.110" />
     <xacro:property name="wheel_joint_damping" value="1.0" />
     <xacro:property name="wheel_joint_friction" value="1.0" />
     <xacro:property name="wheel_joint_effort_limit" value="1000.0" />
     <xacro:property name="wheel_joint_velocity_limit" value="2000.0" />
     <xacro:property name="wheel_mechanical_reduction" value="1.0" />
-    <xacro:property name="motor_wheel_offset_z" value="0.110" /> 
-    <xacro:property name="side_wheel_offset_y" value="0.267" /> 
+
+    <xacro:property name="side_wheel_offset_y" value="0.267" />
     <xacro:property name="side_wheel_offset_z" value="0.070" />
     <xacro:property name="side_wheel_joint_damping" value="1.0" />
     <xacro:property name="side_wheel_joint_friction" value="1.0" />
@@ -101,23 +120,20 @@
 
         <!-- Joint: base_footprint & base_link -->
         <joint name="base_footprint_joint" type="fixed">
-            <origin xyz="0 0 -0.005" rpy="0 0 0" />
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
             <parent link="base_footprint"/>
             <child link="base_link" />
         </joint>
 
         <!-- Link: base_link -->
         <link name="base_link">
-            <xacro:Box_Inertia  m="${base_link_mass}" 
-                                x="${base_link_x}"  
-                                y="${base_link_y}" 
-                                z="${base_link_z}"/>
+            <xacro:Box_Inertia m="${base_link_mass}" x="${base_link_x}" y="${base_link_y}" z="${base_link_z}"/>
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <!-- <box size="${base_link_x} ${base_link_y} ${base_link_z}"/> -->
-                    <mesh filename="package://dsr_description/meshes/chassis_agvs.dae"/>
-                </geometry>       
+                    <mesh filename="package://dsr_description/meshes/chassis_agvs.stl"/>
+                </geometry>
                 <material name="red">
                     <color rgba="0.5 0.1 0.1 1"/>
                 </material>
@@ -128,17 +144,14 @@
                     <!-- <box size="${base_link_x} ${base_link_y} ${base_link_z}"/> -->
                     <mesh filename="package://dsr_description/meshes/chassis_agvs.dae"/>
                 </geometry>
-            </collision>     
+            </collision>
         </link>
 
-        <!-- Link: back motor link -->
-        <link name="back_motor_link">
-            <xacro:Box_Inertia  m="${motor_mass}" 
-                                x="${motor_ixx}"  
-                                y="${motor_iyy}" 
-                                z="${motor_izz}"/>
+        <!-- back steer link -->
+        <link name="back_steer_link">
+            <xacro:Box_Inertia m="${motor_mass}" x="${motor_ixx}" y="${motor_iyy}" z="${motor_izz}"/>
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
+                <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="package://dsr_description/meshes/motor_wheel.dae" scale="1.0 1.0 1.0"/>
                 </geometry>
@@ -154,92 +167,73 @@
             </collision>
         </link>
 
-        <!-- Joint: base_link & back motor -->
-        <joint name="joint_back_motor" type="continuous">
+        <joint name="back_steer_joint" type="revolute">
             <parent link="base_link"/>
-            <child link="back_motor_link"/>
-            <origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${motor_wheel_offset_z}" rpy="0 0 0" /> 
+            <child link="back_steer_link"/>
+            <origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${motor_wheel_offset_z}" rpy="0 0 0" />
             <axis xyz="0 0 1" rpy="0 0 0" />
-            <limit effort="${steer_joint_effort_limit}" velocity="${steer_joint_velocity_limit}" lower="-1.5708" upper="1.5708"/>
+            <limit effort="${steer_joint_effort_limit}" velocity="${steer_joint_velocity_limit}" lower="-1.745329252" upper="1.745329252"/>
             <joint_properties damping="${steer_joint_damping}" friction="{steer_joint_friction}"/>
         </joint>
+    
 
-        <!-- Transmission: back motor -->
-        <!-- <transmission name="joint_bmw_trans">
+        <transmission name="back_steer_tran">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="joint_back_motor">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>	 
+            <joint name="back_steer_joint">
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             </joint>
-            <actuator name="joint_bmw_motor">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>	    
-                <mechanicalReduction>${motor_wheel_mechanical_reduction}</mechanicalReduction>
+            <actuator name="back_steer_motor">
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
             </actuator>
-        </transmission> -->
-
-        <transmission name="joint_bmw_trans">
-			<type>transmission_interface/SimpleTransmission</type>
-			<joint name="joint_back_motor">
-				<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-			</joint>
-			<actuator name="joint_bmw_motor">
-                <hardwareInterface>PositionJointInterface</hardwareInterface>
-				<mechanicalReduction>${motor_wheel_mechanical_reduction}</mechanicalReduction>
-			</actuator>
-		</transmission>
+        </transmission>
 
         <!-- Link: back wheel link -->
         <link name="back_wheel_link">
-            <xacro:Wheel_Inertia    m="${wheel_mass}" 
-                                    ixx="${wheel_ixx}"  
-                                    iyy="${wheel_iyy}" 
-                                    izz="${wheel_izz}"/>
+            <xacro:Wheel_Inertia m="${wheel_mass}" ixx="${wheel_ixx}" iyy="${wheel_iyy}" izz="${wheel_izz}"/>
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
+                <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://dsr_description/meshes/agvs_wheel.dae" scale="1.0 1.0 1.0"/>
+                    <mesh filename="package://dsr_description/meshes/agvs_wheel.stl" scale="1.0 1.0 1.0"/>
                 </geometry>
-                <material name="grey">
-                    <color rgba="0.5 0.5 0.5 1"/>
-                </material>
             </visual>
             <collision>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
+                <origin xyz="0 0 0" rpy="${M_PI/2} 0 0" />
                 <geometry>
-                    <mesh filename="package://dsr_description/meshes/agvs_wheel.dae" scale="1.0 1.0 1.0"/>
+                <cylinder length="${back_wheel_length}" radius="${back_wheel_radius}" />
                 </geometry>
+                <!-- <contact_coefficients mu="1000" kp="10.0" kd="0.1"/> -->
             </collision>
         </link>
 
-        <!-- Joint: back motor & back wheel link -->
-        <joint name="joint_back_wheel" type="continuous">
-            <parent link="back_motor_link"/>
+        <joint name="back_wheel_joint" type="continuous">
+            <parent link="back_steer_link"/>
             <child link="back_wheel_link"/>
-            <origin xyz="0 0 0" rpy="0 0 0" /> 
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <axis xyz="0 1 0" rpy="0 0 0" />
             <limit effort="${wheel_joint_effort_limit}" velocity="${wheel_joint_velocity_limit}"/>
             <joint_properties damping="${wheel_joint_damping}" friction="{wheel_joint_friction}"/>
         </joint>
 
         <!-- Transmission: back wheel -->
-        <transmission name="joint_bw_trans">
+        <transmission name="back_wheel_trans" type="SimpleTransmission">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="joint_back_wheel">
-                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>	 
-            </joint>
-            <actuator name="joint_bw_motor">
-                <hardwareInterface>VelocityJointInterface</hardwareInterface>	    
-                <mechanicalReduction>${wheel_mechanical_reduction}</mechanicalReduction>
+            <actuator name="back_wheel_motor">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
             </actuator>
+            <joint name="back_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
         </transmission>
 
-        <!-- Link: front motor link -->
-        <link name="front_motor_link">
-            <xacro:Box_Inertia  m="${motor_mass}" 
-                                x="${motor_ixx}"  
-                                y="${motor_iyy}" 
-                                z="${motor_izz}"/>
+
+
+        <!-- Link: front steer link -->
+        <link name="front_steer_link">
+            <xacro:Box_Inertia m="${motor_mass}" x="${motor_ixx}" y="${motor_iyy}" z="${motor_izz}"/>
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
+                <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="package://dsr_description/meshes/motor_wheel.dae" scale="1.0 1.0 1.0"/>
                 </geometry>
@@ -255,173 +249,145 @@
             </collision>
         </link>
 
-        <!-- Joint: base_link & front motor -->
-        <joint name="joint_front_motor" type="continuous">
+        <joint name="front_steer_joint" type="revolute">
             <parent link="base_link"/>
-            <child link="front_motor_link"/>
-            <origin xyz="${wheel_offset_x} ${wheel_offset_y} ${motor_wheel_offset_z}" rpy="0 0 0" /> 
+            <child link="front_steer_link"/>
+            <origin xyz="${wheel_offset_x} ${wheel_offset_y} ${motor_wheel_offset_z}" rpy="0 0 0" />
             <axis xyz="0 0 1" rpy="0 0 0" />
-            <limit effort="${steer_joint_effort_limit}" velocity="${steer_joint_velocity_limit}" lower="-1.5708" upper="1.5708"/>
+            <limit effort="${steer_joint_effort_limit}" velocity="${steer_joint_velocity_limit}" lower="-1.745329252" upper="1.745329252"/>
             <joint_properties damping="${steer_joint_damping}" friction="{steer_joint_friction}"/>
         </joint>
 
-        <!-- Transmission: front motor -->
-        <!-- <transmission name="joint_fmw_trans">
+        <transmission name="front_steer_tran">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="joint_front_motor">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>	 
+            <joint name="front_steer_joint">
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             </joint>
-            <actuator name="joint_fmw_motor">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>	    
-                <mechanicalReduction>${motor_wheel_mechanical_reduction}</mechanicalReduction>
+            <actuator name="front_steer_motor">
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
             </actuator>
-        </transmission> -->
-        <transmission name="joint_fmw_trans">
-			<type>transmission_interface/SimpleTransmission</type>
-			<joint name="joint_front_motor">
-				<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-			</joint>
-			<actuator name="joint_fmw_motor">
-                <hardwareInterface>PositionJointInterface</hardwareInterface>
-				<mechanicalReduction>${motor_wheel_mechanical_reduction}</mechanicalReduction>
-			</actuator>
-		</transmission>
+        </transmission>
 
 
         <!-- Link: front wheel link -->
         <link name="front_wheel_link">
-            <xacro:Wheel_Inertia    m="${wheel_mass}" 
-                                    ixx="${wheel_ixx}"  
-                                    iyy="${wheel_iyy}" 
-                                    izz="${wheel_izz}"/>
+            <xacro:Wheel_Inertia m="${wheel_mass}" ixx="${wheel_ixx}" iyy="${wheel_iyy}" izz="${wheel_izz}"/>
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
+                <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://dsr_description/meshes/agvs_wheel.dae" scale="1.0 1.0 1.0"/>
+                    <mesh filename="package://dsr_description/meshes/agvs_wheel.stl" scale="1.0 1.0 1.0"/>
                 </geometry>
-                <material name="grey">
-                    <color rgba="0.5 0.5 0.5 1"/>
-                </material>
             </visual>
             <collision>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
+                <origin xyz="0 0 0" rpy="${M_PI/2} 0 0" />
                 <geometry>
-                    <mesh filename="package://dsr_description/meshes/agvs_wheel.dae" scale="1.0 1.0 1.0"/>
+                <cylinder length="${front_wheel_length}" radius="${front_wheel_radius}" />
                 </geometry>
+                <!-- <contact_coefficients mu="1000" kp="10.0" kd="0.1"/> -->
             </collision>
         </link>
 
         <!-- Joint: front motor & front wheel link -->
-        <joint name="joint_front_wheel" type="continuous">
-            <parent link="front_motor_link"/>
+        <joint name="front_wheel_joint" type="continuous">
+            <parent link="front_steer_link"/>
             <child link="front_wheel_link"/>
-            <origin xyz="0 0 0" rpy="0 0 0" /> 
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <axis xyz="0 1 0" rpy="0 0 0" />
             <limit effort="${wheel_joint_effort_limit}" velocity="${wheel_joint_velocity_limit}"/>
             <joint_properties damping="${wheel_joint_damping}" friction="{wheel_joint_friction}"/>
         </joint>
 
         <!-- Transmission: back wheel -->
-        <transmission name="joint_fw_trans">
+        <transmission name="front_wheel_trans">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="joint_front_wheel">
-                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>	 
+            <joint name="front_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
             </joint>
-            <actuator name="joint_fw_motor">
-                <hardwareInterface>VelocityJointInterface</hardwareInterface>	    
-                <mechanicalReduction>${wheel_mechanical_reduction}</mechanicalReduction>
+            <actuator name="front_wheel_motor">
+                <hardwareInterface>VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
 
         <!-- Link: left wheel link -->
         <link name="left_wheel_link">
-            <xacro:Wheel_Inertia    m="${side_wheel_mass}" 
-                                    ixx="${side_wheel_ixx}"  
-                                    iyy="${side_wheel_iyy}" 
-                                    izz="${side_wheel_izz}"/>
+            <xacro:Wheel_Inertia m="${side_wheel_mass}" ixx="${side_wheel_ixx}" iyy="${side_wheel_iyy}" izz="${side_wheel_izz}"/>
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
-                <geometry>
-                    <mesh filename="package://dsr_description/meshes/side_wheel_agvs.dae" scale="1.0 1.0 1.0"/>
-                </geometry>
-                <material name="grey">
-                    <color rgba="0.5 0.5 0.5 1"/>
-                </material>
-            </visual>
-            
-            <collision>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="package://dsr_description/meshes/side_wheel_agvs.dae" scale="1.0 1.0 1.0"/>
                 </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="${M_PI/2} 0 0" />
+                <geometry>
+                    <cylinder radius="${left_wheel_radius}" length="${left_wheel_length}" />
+                </geometry>
+                <!-- <contact_coefficients mu="1" kp="10.0" kd="0.1"/> -->
             </collision>
         </link>
 
-        <!-- Joint: base link & left wheel link -->
-        <joint name="joint_left_wheel" type="continuous">
+        <joint name="left_wheel_joint" type="continuous">
             <parent link="base_link"/>
             <child link="left_wheel_link"/>
-            <origin xyz="0 ${side_wheel_offset_y} ${side_wheel_offset_z}" rpy="0 0 0" /> 
+            <origin xyz="0 ${side_wheel_offset_y} ${side_wheel_offset_z}" rpy="0 0 0" />
             <axis xyz="0 1 0" rpy="0 0 0" />
             <limit effort="${wheel_joint_effort_limit}" velocity="${wheel_joint_velocity_limit}"/>
             <joint_properties damping="${side_wheel_joint_damping}" friction="{side_wheel_joint_friction}"/>
         </joint>
 
         <!-- Transmission: left wheel -->
-        <transmission name="joint_lw_trans">
+        <transmission name="left_wheel_trans">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="joint_left_wheel">
+            <joint name="left_wheel_joint">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-            </joint>     
-            <actuator name="joint_lw_motor">
+            </joint>
+            <actuator name="left_wheel_motor">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-                <mechanicalReduction>${wheel_mechanical_reduction}</mechanicalReduction>
+                <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
 
+
+
         <!-- Link: right wheel link -->
         <link name="right_wheel_link">
-            <xacro:Wheel_Inertia    m="${side_wheel_mass}" 
-                                    ixx="${side_wheel_ixx}"  
-                                    iyy="${side_wheel_iyy}" 
-                                    izz="${side_wheel_izz}"/>
+            <xacro:Wheel_Inertia m="${side_wheel_mass}" ixx="${side_wheel_ixx}" iyy="${side_wheel_iyy}" izz="${side_wheel_izz}"/>
             <visual>
-                <origin xyz="0 0 0" rpy="0 0 0" /> 
-                <geometry>
-                    <mesh filename="package://dsr_description/meshes/side_wheel_agvs.dae" scale="1.0 1.0 1.0"/>
-                </geometry>
-                <material name="grey">
-                    <color rgba="0.5 0.5 0.5 1"/>
-                </material>
-            </visual>
-            
-            <collision>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="package://dsr_description/meshes/side_wheel_agvs.dae" scale="1.0 1.0 1.0"/>
                 </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="${M_PI/2} 0 0" />
+                <geometry>
+                    <cylinder radius="${right_wheel_radius}" length="${right_wheel_length}" />
+                </geometry>
+                <!-- <contact_coefficients mu="1" kp="10.0" kd="0.1"/> -->
             </collision>
         </link>
 
         <!-- Joint: base link & right wheel link -->
-        <joint name="joint_right_wheel" type="continuous">
+        <joint name="right_wheel_joint" type="continuous">
             <parent link="base_link"/>
             <child link="right_wheel_link"/>
-            <origin xyz="0 -${side_wheel_offset_y} ${side_wheel_offset_z}" rpy="0 0 0" /> 
+            <origin xyz="0 -${side_wheel_offset_y} ${side_wheel_offset_z}" rpy="0 0 0" />
             <axis xyz="0 1 0" rpy="0 0 0" />
             <limit effort="${wheel_joint_effort_limit}" velocity="${wheel_joint_velocity_limit}"/>
             <joint_properties damping="${side_wheel_joint_damping}" friction="{side_wheel_joint_friction}"/>
         </joint>
 
         <!-- Transmission: right wheel -->
-        <transmission name="joint_rw_trans">
+        <transmission name="right_wheel_trans">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="joint_right_wheel">
+            <joint name="right_wheel_joint">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-            </joint>     
-            <actuator name="joint_rw_motor">
+            </joint>
+            <actuator name="right_wheel_motor">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-                <mechanicalReduction>${wheel_mechanical_reduction}</mechanicalReduction>
+                <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
 
